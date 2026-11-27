@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>観光特急 3D WebVR Walkthrough ドクターイエロー並走版</title>
-  <!-- A-Frame 1.4.2 Library -->
+  <title>観光特急 3D WebVR Walkthrough 右左折・路側駐車枠・歩行者版</title>
+  <!-- A-Frame 1.5.0 & extras Library -->
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.7.0/dist/aframe-extras.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.7.0/dist/aframe-extras.min.js"></script>
   <!-- Tailwind CSS for UI HUD -->
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Inter:wght@400;600;700&display=swap');
-    
+
     html, body {
       width: 100%;
       height: 100%;
@@ -57,6 +57,26 @@
       box-shadow: 0 0 10px rgba(212, 175, 55, 0.6);
     }
 
+    input[type="range"].garaku-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.18);
+      outline: none;
+    }
+
+    input[type="range"].garaku-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #facc15;
+      border: 2px solid #800020;
+      cursor: pointer;
+    }
+
     ::-webkit-scrollbar {
       width: 4px;
     }
@@ -79,7 +99,7 @@
         <h1 class="text-lg md:text-xl font-bold tracking-wider text-amber-100">
           観光特急
         </h1>
-        <p class="text-[11px] text-amber-200/70 font-sans">3D WebVR (夕焼けグラデーション・ドクターイエロー並走)</p>
+        <p class="text-[11px] text-amber-200/70 font-sans">3D WebVR (右左折・路側駐車枠・歩行者・赤信号縦列停車)</p>
       </div>
     </div>
 
@@ -112,13 +132,31 @@
     <div id="cab-control-panel" class="garaku-maroon-bg p-3 rounded-2xl pointer-events-auto shadow-2xl hidden border border-amber-400/60">
       <div class="flex justify-between items-center mb-2">
         <span class="text-xs font-bold text-yellow-300">🎮 マスコン・ブレーキ操作（前面展望）</span>
-        <span class="text-[10px] text-amber-200/80">速度: <strong id="speed-display" class="text-white text-sm">60</strong> km/h</span>
+        <div class="text-right font-sans leading-tight">
+          <span class="text-[10px] text-amber-200/80">現在: <strong id="speed-display" class="text-white text-sm">60</strong> km/h</span>
+          <span class="text-[10px] text-yellow-300/90 ml-1.5">目標: <strong id="target-speed-display" class="text-yellow-200 text-xs">60</strong></span>
+        </div>
       </div>
-      <div class="grid grid-cols-4 gap-1.5 mb-2">
-        <button onclick="setTargetSpeed(-15)" class="garaku-btn py-1 rounded text-[11px] font-bold">制動 (B)</button>
-        <button onclick="setTargetSpeed(0)" class="garaku-btn py-1 rounded text-[11px] font-bold bg-neutral-800">N (0)</button>
-        <button onclick="setTargetSpeed(45)" class="garaku-btn py-1 rounded text-[11px] font-bold">P1 (45)</button>
-        <button onclick="setTargetSpeed(85)" class="garaku-btn py-1 rounded text-[11px] font-bold bg-red-950">P2 (85)</button>
+
+      <div class="grid grid-cols-4 gap-1.5 mb-2 font-sans">
+        <button onclick="adjustTargetSpeed(-5)" class="garaku-btn py-1 rounded text-[11px] font-bold">-5 km/h</button>
+        <button onclick="adjustTargetSpeed(-1)" class="garaku-btn py-1 rounded text-[11px] font-bold">-1 km/h</button>
+        <button onclick="adjustTargetSpeed(1)" class="garaku-btn py-1 rounded text-[11px] font-bold">+1 km/h</button>
+        <button onclick="adjustTargetSpeed(5)" class="garaku-btn py-1 rounded text-[11px] font-bold">+5 km/h</button>
+      </div>
+
+      <div class="flex items-center gap-2 mb-2 font-sans">
+        <span class="text-[10px] text-amber-200/80 w-7">0</span>
+        <input id="speed-slider" type="range" min="0" max="120" step="1" value="60" oninput="setTargetSpeed(Number(this.value))" class="garaku-slider flex-1">
+        <span class="text-[10px] text-amber-200/80 w-8 text-right">120</span>
+      </div>
+
+      <div class="grid grid-cols-5 gap-1">
+        <button onclick="setTargetSpeed(-15)" class="garaku-btn py-1 rounded text-[10px] font-bold">減速</button>
+        <button onclick="setTargetSpeed(0)" class="garaku-btn py-1 rounded text-[10px] font-bold bg-neutral-800">N (0)</button>
+        <button onclick="setTargetSpeed(30)" class="garaku-btn py-1 rounded text-[10px] font-bold">入換 (30)</button>
+        <button onclick="setTargetSpeed(60)" class="garaku-btn py-1 rounded text-[10px] font-bold">P1 (60)</button>
+        <button onclick="setTargetSpeed(105)" class="garaku-btn py-1 rounded text-[10px] font-bold bg-red-950">P2 (105)</button>
       </div>
     </div>
 
@@ -132,39 +170,33 @@
         楓文様を散りばめた秋の装い。畳座席を備えた対面クロスシートと和風テーブルで京都町家のようなぬくもりある空間。
       </p>
       <div class="flex justify-between items-center text-[10px] text-amber-300/70 font-sans border-t border-amber-500/20 pt-2">
-        <span>区間：上牧〜大山崎（ドクターイエロー・新幹線 並走高架）</span>
+        <span>区間：右左折・路側駐車枠・歩行者連動・広幅関西街並み（ドクターイエロー・新幹線・対向特急 並走）</span>
       </div>
     </div>
   </div>
 
   <!-- Bottom Right Controls -->
   <div class="fixed bottom-4 right-4 z-50 pointer-events-none flex flex-wrap gap-2 justify-end">
-    <!-- Chime Button -->
     <button onclick="playHankyuChime()" class="garaku-maroon-bg pointer-events-auto px-3 py-2 rounded-xl text-xs text-yellow-300 border border-yellow-500/60 hover:border-yellow-300 flex items-center gap-1.5 shadow-xl">
       <svg class="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5L6 9H2v6h4l5 4V5zM15.54 8.46a5 5 0 010 7.07"></path></svg>
       車内チャイム 🔔
     </button>
-    <!-- View Mode Toggle -->
     <button onclick="toggleCabView()" id="cab-view-btn" class="garaku-maroon-bg pointer-events-auto px-3 py-2 rounded-xl text-xs text-amber-200 border border-amber-500/40 hover:border-amber-300 flex items-center gap-1.5 shadow-xl">
       <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
       視点：<span id="view-mode-label">客室ウォークスルー</span>
     </button>
-    <!-- Weather Toggle -->
     <button onclick="toggleWeather()" id="weather-btn" class="garaku-maroon-bg pointer-events-auto px-3 py-2 rounded-xl text-xs text-amber-200 border border-amber-500/40 hover:border-amber-300 flex items-center gap-1.5 shadow-xl">
       <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path></svg>
       天候：<span id="weather-mode-label">晴れ</span>
     </button>
-    <!-- Sound Toggle -->
     <button onclick="toggleTrainSound()" id="sound-btn" class="garaku-maroon-bg pointer-events-auto px-3 py-2 rounded-xl text-xs text-amber-200 border border-amber-500/40 hover:border-amber-300 flex items-center gap-1.5 shadow-xl">
       <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
       走行音：<span id="sound-mode-label">OFF</span>
     </button>
-    <!-- Lighting Toggle -->
     <button onclick="toggleTimeOfDay()" class="garaku-maroon-bg pointer-events-auto px-3 py-2 rounded-xl text-xs text-amber-200 border border-amber-500/40 hover:border-amber-300 flex items-center gap-1.5 shadow-xl">
       <svg class="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
       照明：<span id="light-mode-label">昼間</span>
     </button>
-    <!-- Reset Camera -->
     <button onclick="resetCamera()" class="garaku-maroon-bg pointer-events-auto px-3 py-2 rounded-xl text-xs text-amber-200 border border-amber-500/40 hover:border-amber-300 flex items-center gap-1.5 shadow-xl">
       <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
       リセット
@@ -173,12 +205,12 @@
 
   <!-- A-Frame 3D Scene -->
   <a-scene embedded renderer="antialias: true; colorManagement: true;" background="color: #121015">
-    
+
     <a-entity id="scene-ambient" light="type: ambient; color: #fff3e0; intensity: 1.15;"></a-entity>
     <a-entity id="scene-sun" light="type: directional; color: #ffebd2; intensity: 0.9" position="20 35 15"></a-entity>
 
     <!-- Player / Camera Rig -->
-    <a-entity id="rig" position="0 0.1 0" movement-controls>
+    <a-entity id="rig" position="0 0.1 0">
       <a-camera id="camera" look-controls="pointerLockEnabled: false" wasd-controls="acceleration: 14" camera="far: 1000; near: 0.05">
         <a-cursor raycaster="objects: .clickable" color="#d4af37" opacity="0.5" scale="0.6 0.6 0.6"></a-cursor>
       </a-camera>
@@ -188,31 +220,63 @@
     <a-entity id="sunset-gradient-dome"></a-entity>
     <a-entity id="cloud-container"></a-entity>
 
-    <!-- 下界の河川敷 -->
-    <a-plane position="0 -8.5 -160" rotation="-90 0 0" width="400" height="450" color="#4d7c0f" material="roughness: 0.95"></a-plane>
-    <a-plane position="48 -8.4 -160" rotation="-90 0 0" width="45" height="450" color="#0284c7" material="roughness: 0.2; metalness: 0.4"></a-plane>
+    <!-- 下界の関西街並み地面・拡幅された2車線道路＋両側歩道・河川敷・遠景山並み -->
+    <a-plane position="0 -8.5 -160" rotation="-90 0 0" width="480" height="480" color="#526053" material="roughness: 0.95"></a-plane>
+    <!-- 拡幅した高架下の街路（車道幅 13.6m: x = -4.9 〜 +8.7 / 中心 x = 1.9） -->
+    <a-box position="1.9 -8.38 -160" width="13.6" height="0.18" depth="480" color="#272d36" material="roughness: 0.85"></a-box>
+    <a-box position="1.9 -8.28 -160" width="0.16" height="0.03" depth="480" color="#fef08a"></a-box>
+    <!-- 車線境界破線（左車線 x=-1.6 / 右車線 x=5.4） -->
+    <a-box position="-1.6 -8.28 -160" width="0.10" height="0.02" depth="480" color="#e2e8f0" material="opacity: 0.55; transparent: true"></a-box>
+    <a-box position="5.4 -8.28 -160" width="0.10" height="0.02" depth="480" color="#e2e8f0" material="opacity: 0.55; transparent: true"></a-box>
+    <!-- 左右歩道（幅 2.2m） -->
+    <a-box position="-6.0 -8.31 -160" width="2.2" height="0.28" depth="480" color="#b8b0a2"></a-box>
+    <a-box position="9.8 -8.31 -160" width="2.2" height="0.28" depth="480" color="#b8b0a2"></a-box>
+
+    <!-- 堤防法面＆天端道路＆川面 -->
+    <a-box position="27.5 -7.4 -160" width="9.0" height="2.2" depth="480" rotation="0 0 -10" color="#5c7c48" material="roughness: 0.95"></a-box>
+    <a-box position="33.0 -6.5 -160" width="6.2" height="0.25" depth="480" color="#475569" material="roughness: 0.85"></a-box>
+    <a-box position="33.0 -6.36 -160" width="0.12" height="0.03" depth="480" color="#fef08a"></a-box>
+    <a-plane position="42.5 -8.35 -160" rotation="-90 0 0" width="10" height="480" color="#a8a29e" material="roughness: 0.95"></a-plane>
+    <a-plane position="56.5 -8.4 -160" rotation="-90 0 0" width="48" height="480" color="#0284c7" material="roughness: 0.2; metalness: 0.45"></a-plane>
+
+    <!-- 対岸の河川敷＆関西の東山・西山連峰 -->
+    <a-plane position="97 -8.45 -160" rotation="-90 0 0" width="40" height="480" color="#3f6212" material="roughness: 0.95"></a-plane>
+    <a-box position="-110 12 -160" width="18" height="54" depth="480" rotation="0 0 -14" color="#2d4c3e" material="roughness: 0.95"></a-box>
+    <a-box position="-135 20 -160" width="26" height="72" depth="480" rotation="0 0 -18" color="#1e3a34" material="roughness: 0.95"></a-box>
+    <a-box position="135 14 -160" width="24" height="56" depth="480" rotation="0 0 15" color="#365346" material="roughness: 0.95"></a-box>
 
     <!-- 京都線 高架橋 -->
+    <a-box position="1.9 -0.75 -160" width="8.8" height="0.85" depth="420" color="#94a3b8"></a-box>
     <a-box position="1.9 -0.35 -160" width="8.6" height="0.4" depth="420" color="#cbd5e1"></a-box>
     <a-box position="1.9 -0.13 -160" width="8.0" height="0.06" depth="420" color="#475569"></a-box>
     <a-box position="-2.35 0.45 -160" width="0.25" height="1.2" depth="420" color="#94a3b8"></a-box>
+    <a-box position="-2.35 0.72 -160" width="0.28" height="0.32" depth="420" color="#64748b"></a-box>
     <a-box position="6.15 0.45 -160" width="0.25" height="1.2" depth="420" color="#94a3b8"></a-box>
+    <a-box position="6.15 0.72 -160" width="0.28" height="0.32" depth="420" color="#64748b"></a-box>
 
-    <!-- 自線レール -->
+    <!-- 自線レール・架線 -->
     <a-box position="-0.72 -0.05 -160" width="0.08" height="0.12" depth="420" color="#cbd5e1" material="metalness: 0.8; roughness: 0.3"></a-box>
     <a-box position="0.72 -0.05 -160" width="0.08" height="0.12" depth="420" color="#cbd5e1" material="metalness: 0.8; roughness: 0.3"></a-box>
     <a-box position="0 3.8 -160" width="0.025" height="0.025" depth="420" color="#334155"></a-box>
+    <a-box position="0 4.35 -160" width="0.02" height="0.02" depth="420" color="#475569"></a-box>
 
-    <!-- 対面線レール -->
+    <!-- 対面線レール・架線 -->
     <a-box position="3.08 -0.05 -160" width="0.08" height="0.12" depth="420" color="#cbd5e1" material="metalness: 0.8; roughness: 0.3"></a-box>
     <a-box position="4.52 -0.05 -160" width="0.08" height="0.12" depth="420" color="#cbd5e1" material="metalness: 0.8; roughness: 0.3"></a-box>
     <a-box position="3.8 3.8 -160" width="0.025" height="0.025" depth="420" color="#334155"></a-box>
+    <a-box position="3.8 4.35 -160" width="0.02" height="0.02" depth="420" color="#475569"></a-box>
+
+    <!-- 対向の観光特急（x = 3.8） -->
+    <a-entity id="oncoming-express-train" position="3.8 0.05 90"></a-entity>
 
     <!-- 東海道新幹線 高架橋（左側） -->
-    <a-entity id="shinkansen-viaduct" position="-11.5 0.6 -160">
+    <a-entity id="shinkansen-viaduct" position="-12.5 0.6 -160">
+      <a-box position="0 -0.85 0" width="10.0" height="1.15" depth="420" color="#94a3b8"></a-box>
       <a-box position="0 -0.25 0" width="9.8" height="0.55" depth="420" color="#e2e8f0"></a-box>
       <a-box position="-4.75 0.85 0" width="0.28" height="1.85" depth="420" color="#cbd5e1"></a-box>
+      <a-box position="-4.75 1.15 0" width="0.32" height="0.45" depth="420" color="#94a3b8"></a-box>
       <a-box position="4.75 0.85 0" width="0.28" height="1.85" depth="420" color="#cbd5e1"></a-box>
+      <a-box position="4.75 1.15 0" width="0.32" height="0.45" depth="420" color="#94a3b8"></a-box>
       <a-box position="4.75 1.78 0" width="0.34" height="0.08" depth="420" color="#94a3b8"></a-box>
       <a-box position="-2.6 0.08 0" width="0.08" height="0.12" depth="420" color="#94a3b8"></a-box>
       <a-box position="-1.1 0.08 0" width="0.08" height="0.12" depth="420" color="#94a3b8"></a-box>
@@ -222,9 +286,9 @@
       <a-box position="1.85 4.2 0" width="0.03" height="0.03" depth="420" color="#475569"></a-box>
     </a-entity>
 
-    <!-- 手前側（x = -9.65）にドクターイエロー、奥側（x = -13.35）にN700系新幹線を配置 -->
-    <a-entity id="doctor-yellow-train" position="-9.65 0.65 -140"></a-entity>
-    <a-entity id="shinkansen-train-down" position="-13.35 0.65 80"></a-entity>
+    <!-- 手前側（x = -10.65）にドクターイエロー、奥側（x = -14.35）にN700系新幹線を配置 -->
+    <a-entity id="doctor-yellow-train" position="-10.65 0.65 -140"></a-entity>
+    <a-entity id="shinkansen-train-down" position="-14.35 0.65 80"></a-entity>
 
     <a-entity id="scenery-left" position="-42 8 -160">
       <a-box width="1.5" height="36" depth="420" color="#3a5a40" material="roughness: 0.95"></a-box>
@@ -237,17 +301,28 @@
     <a-entity id="scenery-posts"></a-entity>
     <a-entity id="shinkansen-posts"></a-entity>
     <a-entity id="railway-ties"></a-entity>
-    
+    <a-entity id="trackside-details"></a-entity>
+    <a-entity id="river-bridge-and-towers"></a-entity>
+    <a-entity id="under-viaduct-structures"></a-entity>
+    <a-entity id="road-vehicles"></a-entity>
+    <a-entity id="pedestrians-container"></a-entity>
+
     <a-entity id="station-platform" position="-2.3 0 -220">
       <a-box position="0 0.45 0" width="1.8" height="0.9" depth="45" color="#94a3b8"></a-box>
       <a-box position="0 0.91 0" width="1.75" height="0.02" depth="44.8" color="#cbd5e1"></a-box>
       <a-box position="0.72 0.92 0" width="0.14" height="0.02" depth="44.8" color="#eab308"></a-box>
+      <a-box position="0.72 0.925 0" width="0.05" height="0.01" depth="44.6" color="#ca8a04"></a-box>
       <a-box position="0 2.4 0" width="1.8" height="0.1" depth="42" color="#334155"></a-box>
+      <a-box position="0.35 2.34 -10" width="0.35" height="0.03" depth="1.2" color="#fef9c3" material="emissive: #fef08a; emissiveIntensity: 0.6"></a-box>
+      <a-box position="0.35 2.34 10" width="0.35" height="0.03" depth="1.2" color="#fef9c3" material="emissive: #fef08a; emissiveIntensity: 0.6"></a-box>
       <a-cylinder position="0.4 1.6 -16" radius="0.07" height="1.6" color="#475569"></a-cylinder>
       <a-cylinder position="0.4 1.6 0" radius="0.07" height="1.6" color="#475569"></a-cylinder>
       <a-cylinder position="0.4 1.6 16" radius="0.07" height="1.6" color="#475569"></a-cylinder>
+      <a-box position="0.15 1.18 -8" width="0.42" height="0.06" depth="1.6" color="#b45309"></a-box>
+      <a-box position="0.15 1.18 8" width="0.42" height="0.06" depth="1.6" color="#b45309"></a-box>
       <a-box position="0.65 2.05 0" width="0.05" height="0.48" depth="1.8" color="#ffffff"></a-box>
       <a-box position="0.65 2.05 0" width="0.06" height="0.1" depth="1.8" color="#800020"></a-box>
+      <a-box position="0.65 2.05 0" width="0.065" height="0.12" depth="0.9" color="#1e293b"></a-box>
     </a-entity>
 
     <a-entity id="weather-particles"></a-entity>
@@ -302,20 +377,42 @@
     let weatherMode = 0;
     const strapElements = [];
 
-    // 923形 ドクターイエロー（7両編成・検測ドーム＆ライト付き）生成関数
+    function buildShinkansenBogiesHTML(carLen) {
+      const zOffsets = [-carLen * 0.28, carLen * 0.28];
+      let bogieHtml = '';
+      zOffsets.forEach(bz => {
+        bogieHtml += `
+          <a-entity position="0 0.24 ${bz}">
+            <a-box position="0 0 0" width="2.15" height="0.22" depth="2.35" color="#334155"></a-box>
+            <a-cylinder position="-1.05 -0.02 -0.82" radius="0.34" height="0.14" rotation="0 0 90" color="#64748b" material="metalness: 0.8; roughness: 0.25"></a-cylinder>
+            <a-cylinder position="1.05 -0.02 -0.82" radius="0.34" height="0.14" rotation="0 0 90" color="#64748b" material="metalness: 0.8; roughness: 0.25"></a-cylinder>
+            <a-cylinder position="-1.05 -0.02 0.82" radius="0.34" height="0.14" rotation="0 0 90" color="#64748b" material="metalness: 0.8; roughness: 0.25"></a-cylinder>
+            <a-cylinder position="1.05 -0.02 0.82" radius="0.34" height="0.14" rotation="0 0 90" color="#64748b" material="metalness: 0.8; roughness: 0.25"></a-cylinder>
+            <a-cylinder position="-0.95 0.14 0" radius="0.12" height="0.18" color="#1e293b"></a-cylinder>
+            <a-cylinder position="0.95 0.14 0" radius="0.12" height="0.18" color="#1e293b"></a-cylinder>
+          </a-entity>
+        `;
+      });
+      bogieHtml += `
+        <a-box position="0 0.26 0" width="2.2" height="0.34" depth="4.6" color="#1e293b"></a-box>
+        <a-box position="0 0.26 -5.4" width="1.9" height="0.28" depth="1.6" color="#334155"></a-box>
+        <a-box position="0 0.26 5.4" width="1.9" height="0.28" depth="1.6" color="#334155"></a-box>
+      `;
+      return bogieHtml;
+    }
+
     function buildDoctorYellowModel(containerId, isUpbound) {
       const container = document.getElementById(containerId);
-      const carCount = 7; // ドクターイエローは7両編成
+      const carCount = 7;
       const carLen = 14.5;
-      const bodyYellow = "#facc15"; // 鮮やかな新幹線イエロー
-      const stripeBlue = "#0369a1"; // 濃紺・ブルーの帯
+      const bodyYellow = "#facc15";
+      const stripeBlue = "#0369a1";
       let html = '';
 
       for (let i = 0; i < carCount; i++) {
         const z = isUpbound ? (i * (carLen + 0.3)) : -(i * (carLen + 0.3));
         const isFront = (i === 0);
         const isRear = (i === carCount - 1);
-        // 2号車・6号車付近のパンタグラフ検測投光器（ライトアップ）と4号車観測ドームを再現
         const hasObservationDome = (i === 3);
         const hasInspectionLight = (i === 1 || i === 5);
 
@@ -323,18 +420,25 @@
           const dir = (isUpbound && isFront) || (!isUpbound && isRear) ? -1 : 1;
           html += `
             <a-entity position="0 0 ${z}">
-              <!-- 車体本体（イエロー） -->
+              ${buildShinkansenBogiesHTML(10.0)}
               <a-box position="0 1.45 ${-dir * 2.2}" width="2.95" height="2.4" depth="10.0" color="${bodyYellow}"></a-box>
-              <!-- ブルー帯 -->
+              <a-box position="0 2.66 ${-dir * 2.2}" width="2.55" height="0.06" depth="9.6" color="#eab308"></a-box>
+              <a-box position="0 2.74 ${-dir * 0.2}" width="1.8" height="0.14" depth="2.6" color="#e2e8f0"></a-box>
+              <a-box position="0 2.74 ${-dir * 4.2}" width="1.8" height="0.14" depth="2.6" color="#e2e8f0"></a-box>
               <a-box position="0 0.72 ${-dir * 2.2}" width="2.99" height="0.24" depth="10.0" color="${stripeBlue}"></a-box>
               <a-box position="0 1.25 ${-dir * 2.2}" width="2.99" height="0.07" depth="10.0" color="${stripeBlue}"></a-box>
-              <!-- 700系ベース流線形ノーズ -->
+              <a-box position="0 0.32 ${-dir * 2.2}" width="2.97" height="0.08" depth="10.0" color="#ca8a04"></a-box>
+              <a-box position="0 1.38 ${-dir * 6.4}" width="2.98" height="2.05" depth="0.95" color="#eab308"></a-box>
+              <a-box position="0 1.55 ${-dir * 6.4}" width="2.99" height="0.72" depth="0.52" color="#1e293b"></a-box>
+              <a-box position="0 1.98 ${-dir * 4.8}" width="2.98" height="0.16" depth="0.45" color="#0f172a"></a-box>
+              <a-box position="0 1.98 ${-dir * 4.8}" width="2.99" height="0.10" depth="0.36" color="#fef08a" material="emissive: #facc15; emissiveIntensity: 0.7"></a-box>
               <a-box position="0 1.05 ${dir * 4.2}" width="2.7" height="1.5" depth="3.8" rotation="${dir * 12} 0 0" color="${bodyYellow}"></a-box>
               <a-cone position="0 0.75 ${dir * 6.8}" radius-bottom="1.25" radius-top="0.25" height="3.2" rotation="${dir * 86} 0 0" color="${bodyYellow}"></a-cone>
               <a-box position="0 0.65 ${dir * 4.5}" width="2.76" height="0.20" depth="4.2" color="${stripeBlue}"></a-box>
-              <!-- 運転席ガラス＆前方軌道確認カメラ窓 -->
               <a-box position="0 1.72 ${dir * 3.2}" width="1.9" height="0.55" depth="1.4" rotation="${dir * 28} 0 0" color="#0f172a"></a-box>
-              <!-- ヘッドライト / テールライト -->
+              <a-box position="0 1.74 ${dir * 3.2}" width="0.08" height="0.58" depth="1.42" rotation="${dir * 28} 0 0" color="${bodyYellow}"></a-box>
+              <a-box position="0 0.56 ${dir * 7.8}" width="0.48" height="0.16" depth="0.32" color="#0f172a"></a-box>
+              <a-box position="0 0.52 ${-dir * 7.25}" width="0.72" height="0.42" depth="0.12" color="#ca8a04"></a-box>
               <a-box position="-0.85 1.15 ${dir * 5.2}" width="0.35" height="0.14" depth="0.2" color="${isFront ? '#ffffff' : '#ef4444'}" material="emissive: ${isFront ? '#fef08a' : '#dc2626'}; emissiveIntensity: 1.2"></a-box>
               <a-box position="0.85 1.15 ${dir * 5.2}" width="0.35" height="0.14" depth="0.2" color="${isFront ? '#ffffff' : '#ef4444'}" material="emissive: ${isFront ? '#fef08a' : '#dc2626'}; emissiveIntensity: 1.2"></a-box>
             </a-entity>
@@ -342,25 +446,35 @@
         } else {
           html += `
             <a-entity position="0 0 ${z}">
-              <!-- 中間車（イエロー） -->
+              ${buildShinkansenBogiesHTML(carLen)}
               <a-box position="0 1.45 0" width="2.95" height="2.4" depth="${carLen}" color="${bodyYellow}"></a-box>
-              <!-- ブルー帯 -->
+              <a-box position="0 2.66 0" width="2.55" height="0.06" depth="${carLen - 0.3}" color="#eab308"></a-box>
+              <a-box position="0 2.74 -3.4" width="1.8" height="0.14" depth="2.8" color="#e2e8f0"></a-box>
+              <a-box position="0 2.74 3.4" width="1.8" height="0.14" depth="2.8" color="#e2e8f0"></a-box>
               <a-box position="0 0.72 0" width="2.99" height="0.24" depth="${carLen}" color="${stripeBlue}"></a-box>
               <a-box position="0 1.25 0" width="2.99" height="0.07" depth="${carLen}" color="${stripeBlue}"></a-box>
-              <!-- 検測機器室（窓が極端に少ない特徴的な側面） -->
-              <a-box position="0 1.62 -3.5" width="2.98" height="0.42" depth="1.6" color="#1e293b"></a-box>
-              <a-box position="0 1.62 3.5" width="2.98" height="0.42" depth="1.6" color="#1e293b"></a-box>
-              <!-- 屋根上：観測ドーム（4号車） -->
+              <a-box position="0 0.32 0" width="2.97" height="0.08" depth="${carLen}" color="#ca8a04"></a-box>
+              <a-box position="0 1.38 -5.4" width="2.98" height="2.05" depth="0.95" color="#eab308"></a-box>
+              <a-box position="0 1.38 5.4" width="2.98" height="2.05" depth="0.95" color="#eab308"></a-box>
+              <a-box position="0 1.98 -4.0" width="2.98" height="0.16" depth="0.45" color="#0f172a"></a-box>
+              <a-box position="0 1.98 -4.0" width="2.99" height="0.10" depth="0.36" color="#fef08a" material="emissive: #facc15; emissiveIntensity: 0.7"></a-box>
+              <a-box position="0 1.62 -2.2" width="2.98" height="0.42" depth="1.6" color="#1e293b"></a-box>
+              <a-box position="0 1.62 2.2" width="2.98" height="0.42" depth="1.6" color="#1e293b"></a-box>
+              <a-box position="0 1.05 0" width="2.98" height="0.26" depth="2.4" color="#ca8a04"></a-box>
               ${hasObservationDome ? `
-                <a-box position="0 2.82 0" width="1.4" height="0.38" depth="2.8" color="#facc15"></a-box>
-                <a-box position="0 2.85 0" width="1.44" height="0.22" depth="2.2" color="#0f172a"></a-box>
+                <a-box position="0 2.84 0" width="1.45" height="0.42" depth="2.9" color="#facc15"></a-box>
+                <a-box position="0 2.86 0" width="1.48" height="0.24" depth="2.3" color="#0f172a"></a-box>
+                <a-box position="0 2.88 1.25" width="1.49" height="0.16" depth="0.22" color="#38bdf8" material="emissive: #0284c7; emissiveIntensity: 0.6"></a-box>
               ` : ''}
-              <!-- 屋根上：架線検測用パンタグラフ＆緑・白投光ライト -->
               ${hasInspectionLight ? `
-                <a-box position="0 2.75 0" width="1.2" height="0.2" depth="1.8" color="#475569"></a-box>
-                <a-sphere position="0 2.95 0" radius="0.25" color="#ffffff" material="emissive: #a7f3d0; emissiveIntensity: 1.2"></a-sphere>
+                <a-box position="0 2.75 0" width="1.25" height="0.16" depth="1.9" color="#475569"></a-box>
+                <a-box position="0 3.02 0" width="1.85" height="0.05" depth="0.12" color="#94a3b8"></a-box>
+                <a-box position="-0.55 2.88 0.45" width="0.06" height="0.32" depth="0.06" rotation="24 0 0" color="#64748b"></a-box>
+                <a-box position="0.55 2.88 0.45" width="0.06" height="0.32" depth="0.06" rotation="24 0 0" color="#64748b"></a-box>
+                <a-box position="-0.55 2.88 -0.45" width="0.06" height="0.32" depth="0.06" rotation="-24 0 0" color="#64748b"></a-box>
+                <a-box position="0.55 2.88 -0.45" width="0.06" height="0.32" depth="0.06" rotation="-24 0 0" color="#64748b"></a-box>
+                <a-sphere position="0 2.95 0.95" radius="0.22" color="#ffffff" material="emissive: #a7f3d0; emissiveIntensity: 1.2"></a-sphere>
               ` : ''}
-              <!-- 幌（イエロー） -->
               <a-box position="0 1.42 ${carLen / 2 + 0.15}" width="2.6" height="2.2" depth="0.35" color="#ca8a04"></a-box>
             </a-entity>
           `;
@@ -369,7 +483,6 @@
       container.innerHTML = html;
     }
 
-    // 通常のN700系新幹線（白色車体・青帯）生成関数
     function buildShinkansenModel(containerId, isUpbound) {
       const container = document.getElementById(containerId);
       const carCount = 10;
@@ -380,33 +493,144 @@
         const z = isUpbound ? (i * (carLen + 0.3)) : -(i * (carLen + 0.3));
         const isFront = (i === 0);
         const isRear = (i === carCount - 1);
+        const hasPantograph = (i === 2 || i === 7);
 
         if (isFront || isRear) {
           const dir = (isUpbound && isFront) || (!isUpbound && isRear) ? -1 : 1;
           html += `
             <a-entity position="0 0 ${z}">
+              ${buildShinkansenBogiesHTML(10.0)}
               <a-box position="0 1.45 ${-dir * 2.2}" width="2.95" height="2.4" depth="10.0" color="#f8fafc"></a-box>
+              <a-box position="0 2.66 ${-dir * 2.2}" width="2.55" height="0.06" depth="9.6" color="#e2e8f0"></a-box>
+              <a-box position="0 2.74 ${-dir * 0.4}" width="1.8" height="0.14" depth="2.6" color="#cbd5e1"></a-box>
+              <a-box position="0 2.74 ${-dir * 4.2}" width="1.8" height="0.14" depth="2.6" color="#cbd5e1"></a-box>
               <a-box position="0 0.72 ${-dir * 2.2}" width="2.99" height="0.22" depth="10.0" color="#0284c7"></a-box>
               <a-box position="0 1.25 ${-dir * 2.2}" width="2.99" height="0.06" depth="10.0" color="#0284c7"></a-box>
+              <a-box position="0 0.32 ${-dir * 2.2}" width="2.97" height="0.07" depth="10.0" color="#94a3b8"></a-box>
+              <a-box position="0 1.62 ${-dir * 1.4}" width="2.98" height="0.42" depth="5.6" color="#1e293b"></a-box>
+              <a-box position="0 1.62 ${-dir * 1.4}" width="2.99" height="0.44" depth="0.22" color="#f8fafc"></a-box>
+              <a-box position="0 1.62 ${-dir * 2.8}" width="2.99" height="0.44" depth="0.22" color="#f8fafc"></a-box>
+              <a-box position="0 1.62 0.0" width="2.99" height="0.44" depth="0.22" color="#f8fafc"></a-box>
+              <a-box position="0 1.38 ${-dir * 6.4}" width="2.98" height="2.05" depth="0.95" color="#e2e8f0"></a-box>
+              <a-box position="0 1.98 ${-dir * 4.8}" width="2.98" height="0.16" depth="0.45" color="#0f172a"></a-box>
+              <a-box position="0 1.98 ${-dir * 4.8}" width="2.99" height="0.10" depth="0.36" color="#38bdf8" material="emissive: #0284c7; emissiveIntensity: 0.75"></a-box>
               <a-box position="0 1.05 ${dir * 4.2}" width="2.7" height="1.5" depth="3.8" rotation="${dir * 12} 0 0" color="#f8fafc"></a-box>
               <a-cone position="0 0.75 ${dir * 6.8}" radius-bottom="1.25" radius-top="0.25" height="3.2" rotation="${dir * 86} 0 0" color="#f8fafc"></a-cone>
               <a-box position="0 0.65 ${dir * 4.5}" width="2.76" height="0.18" depth="4.2" color="#0284c7"></a-box>
               <a-box position="0 1.72 ${dir * 3.2}" width="1.9" height="0.55" depth="1.4" rotation="${dir * 28} 0 0" color="#0f172a"></a-box>
+              <a-box position="0 1.74 ${dir * 3.2}" width="0.08" height="0.58" depth="1.42" rotation="${dir * 28} 0 0" color="#f8fafc"></a-box>
+              <a-box position="0 0.52 ${-dir * 7.25}" width="0.72" height="0.42" depth="0.12" color="#64748b"></a-box>
               <a-box position="-0.85 1.15 ${dir * 5.2}" width="0.35" height="0.14" depth="0.2" color="${isFront ? '#fef08a' : '#ef4444'}" material="emissive: ${isFront ? '#facc15' : '#dc2626'}; emissiveIntensity: 1.0"></a-box>
-              <a-box position="0.85 1.15 ${dir * 5.2}" width="0.35" height="0.14" depth="0.2" color="${isFront ? '#fef08a' : '#ef4444'}" material="emissive: ${isFront ? '#facc15' : '#dc2626'}; emissiveIntensity: 1.0"></a-box>
+              <a-box position="0.85 1.15 ${dir * 5.2}" width="0.35" height="0.14" depth="0.2" color="${isFront ? '#fef08a' : '#ef4444'}" material="emissive: ${isFront ? '#fef08a' : '#dc2626'}; emissiveIntensity: 1.0"></a-box>
             </a-entity>
           `;
         } else {
           html += `
             <a-entity position="0 0 ${z}">
+              ${buildShinkansenBogiesHTML(carLen)}
               <a-box position="0 1.45 0" width="2.95" height="2.4" depth="${carLen}" color="#f8fafc"></a-box>
+              <a-box position="0 2.66 0" width="2.55" height="0.06" depth="${carLen - 0.3}" color="#e2e8f0"></a-box>
+              <a-box position="0 2.74 -3.6" width="1.8" height="0.14" depth="2.8" color="#cbd5e1"></a-box>
+              <a-box position="0 2.74 3.6" width="1.8" height="0.14" depth="2.8" color="#cbd5e1"></a-box>
               <a-box position="0 0.72 0" width="2.99" height="0.22" depth="${carLen}" color="#0284c7"></a-box>
               <a-box position="0 1.25 0" width="2.99" height="0.06" depth="${carLen}" color="#0284c7"></a-box>
-              <a-box position="0 1.62 0" width="2.98" height="0.42" depth="${carLen - 0.8}" color="#1e293b"></a-box>
+              <a-box position="0 0.32 0" width="2.97" height="0.07" depth="${carLen}" color="#94a3b8"></a-box>
+              <a-box position="0 1.62 0" width="2.98" height="0.42" depth="${carLen - 2.6}" color="#1e293b"></a-box>
+              <a-box position="0 1.62 -3.6" width="2.99" height="0.44" depth="0.22" color="#f8fafc"></a-box>
+              <a-box position="0 1.62 -1.8" width="2.99" height="0.44" depth="0.22" color="#f8fafc"></a-box>
+              <a-box position="0 1.62 0.0" width="2.99" height="0.44" depth="0.22" color="#f8fafc"></a-box>
+              <a-box position="0 1.62 1.8" width="2.99" height="0.44" depth="0.22" color="#f8fafc"></a-box>
+              <a-box position="0 1.62 3.6" width="2.99" height="0.44" depth="0.22" color="#f8fafc"></a-box>
+              <a-box position="0 1.38 -5.4" width="2.98" height="2.05" depth="0.95" color="#e2e8f0"></a-box>
+              <a-box position="0 1.38 5.4" width="2.98" height="2.05" depth="0.95" color="#e2e8f0"></a-box>
+              <a-box position="0 1.98 -4.0" width="2.98" height="0.16" depth="0.45" color="#0f172a"></a-box>
+              <a-box position="0 1.98 -4.0" width="2.99" height="0.10" depth="0.36" color="#38bdf8" material="emissive: #0284c7; emissiveIntensity: 0.75"></a-box>
+              ${hasPantograph ? `
+                <a-box position="0 2.73 0" width="1.2" height="0.14" depth="1.6" color="#475569"></a-box>
+                <a-box position="0 2.98 0" width="1.75" height="0.04" depth="0.1" color="#94a3b8"></a-box>
+              ` : ''}
               <a-box position="0 1.42 ${carLen / 2 + 0.15}" width="2.6" height="2.2" depth="0.35" color="#64748b"></a-box>
             </a-entity>
           `;
         }
+      }
+      container.innerHTML = html;
+    }
+
+    function buildOncomingExpressModel(containerId) {
+      const container = document.getElementById(containerId);
+      const carCount = 6;
+      const carLen = 17.5;
+      const maroon = "#5c0b16";
+      const gold = "#d4af37";
+      let html = '';
+
+      for (let i = 0; i < carCount; i++) {
+        const z = -(i * (carLen + 1.2));
+        const isFront = (i === 0);
+        const isRear = (i === carCount - 1);
+
+        [-carLen * 0.28, carLen * 0.28].forEach(bz => {
+          html += `
+            <a-entity position="0 0.24 ${bz}">
+              <a-box position="0 0 0" width="1.85" height="0.22" depth="2.1" color="#1e293b"></a-box>
+              <a-cylinder position="-0.85 -0.02 -0.72" radius="0.32" height="0.12" rotation="0 0 90" color="#64748b" material="metalness: 0.8; roughness: 0.25"></a-cylinder>
+              <a-cylinder position="0.85 -0.02 -0.72" radius="0.32" height="0.12" rotation="0 0 90" color="#64748b" material="metalness: 0.8; roughness: 0.25"></a-cylinder>
+              <a-cylinder position="-0.85 -0.02 0.72" radius="0.32" height="0.12" rotation="0 0 90" color="#64748b" material="metalness: 0.8; roughness: 0.25"></a-cylinder>
+              <a-cylinder position="0.85 -0.02 0.72" radius="0.32" height="0.12" rotation="0 0 90" color="#64748b" material="metalness: 0.8; roughness: 0.25"></a-cylinder>
+            </a-entity>
+          `;
+        });
+        html += `<a-box position="0 0.26 0" width="1.95" height="0.30" depth="4.2" color="#29170e"></a-box>`;
+
+        html += `
+          <a-entity position="0 0 ${z}">
+            <a-box position="0 1.52 0" width="2.76" height="2.45" depth="${carLen}" color="${maroon}"></a-box>
+            <a-box position="0 2.76 0" width="2.45" height="0.06" depth="${carLen - 0.3}" color="#2b110a"></a-box>
+            <a-box position="0 2.28 0" width="2.80" height="0.05" depth="${carLen}" color="${gold}"></a-box>
+            <a-box position="0 0.78 0" width="2.80" height="0.04" depth="${carLen}" color="${gold}"></a-box>
+            <a-box position="0 0.34 0" width="2.78" height="0.08" depth="${carLen}" color="#1e130c"></a-box>
+            <a-box position="0 2.84 -4.5" width="1.65" height="0.16" depth="2.4" color="#475569"></a-box>
+            <a-box position="0 2.84 4.5" width="1.65" height="0.16" depth="2.4" color="#475569"></a-box>
+            ${[-5.4, -3.2, -1.0, 1.2, 3.4, 5.2].map(wz => `
+              <a-entity position="0 1.62 ${wz}">
+                <a-box position="0 0 0" width="2.79" height="0.62" depth="1.35" color="#fef3c7" material="emissive: #fde68a; emissiveIntensity: 0.45; opacity: 0.78; transparent: true"></a-box>
+                <a-box position="0 0.34 0" width="2.81" height="0.04" depth="1.42" color="${gold}"></a-box>
+                <a-box position="0 -0.34 0" width="2.81" height="0.04" depth="1.42" color="${gold}"></a-box>
+              </a-entity>
+            `).join('')}
+            <a-box position="0 1.42 -7.2" width="2.79" height="2.05" depth="1.15" color="#3b0712"></a-box>
+            <a-box position="0 1.42 7.2" width="2.79" height="2.05" depth="1.15" color="#3b0712"></a-box>
+            <a-box position="0 2.12 -5.8" width="2.79" height="0.22" depth="0.65" color="#0f172a"></a-box>
+            <a-box position="0 2.12 -5.8" width="2.80" height="0.14" depth="0.52" color="#fef08a" material="emissive: #f59e0b; emissiveIntensity: 0.85"></a-box>
+            ${!isRear ? `
+              <a-box position="0 1.48 ${-(carLen / 2 + 0.6)}" width="1.45" height="2.25" depth="1.25" color="#171717"></a-box>
+            ` : ''}
+            ${isFront ? `
+              <a-entity position="0 0 ${carLen / 2}">
+                <a-box position="0 1.52 0.04" width="2.78" height="2.45" depth="0.12" color="${maroon}"></a-box>
+                <a-box position="0 2.28 0.06" width="2.80" height="0.06" depth="0.12" color="${gold}"></a-box>
+                <a-box position="-0.62 1.78 0.08" width="0.88" height="0.68" depth="0.08" color="#0f172a"></a-box>
+                <a-box position="0.62 1.78 0.08" width="0.88" height="0.68" depth="0.08" color="#0f172a"></a-box>
+                <a-box position="0 1.78 0.09" width="0.16" height="0.72" depth="0.08" color="${maroon}"></a-box>
+                <a-box position="0 2.48 0.10" width="0.46" height="0.14" depth="0.10" color="#fef9c3" material="emissive: #fef08a; emissiveIntensity: 1.3"></a-box>
+                <a-sphere position="-1.05 1.12 0.10" radius="0.14" color="#ffffff" material="emissive: #fef08a; emissiveIntensity: 1.25"></a-sphere>
+                <a-sphere position="1.05 1.12 0.10" radius="0.14" color="#ffffff" material="emissive: #fef08a; emissiveIntensity: 1.25"></a-sphere>
+                <a-box position="0 1.25 0.07" width="0.72" height="1.75" depth="0.08" color="#3b0712"></a-box>
+                <a-cylinder position="0 1.48 0.12" radius="0.18" height="0.04" rotation="90 0 0" color="${gold}"></a-cylinder>
+                <a-box position="0 0.42 0.18" width="2.55" height="0.48" depth="0.45" color="#1e293b"></a-box>
+              </a-entity>
+            ` : ''}
+            ${isRear ? `
+              <a-entity position="0 0 ${-carLen / 2}">
+                <a-box position="0 1.52 -0.04" width="2.78" height="2.45" depth="0.12" color="${maroon}"></a-box>
+                <a-sphere position="-1.05 1.12 -0.10" radius="0.14" color="#ef4444" material="emissive: #dc2626; emissiveIntensity: 1.2"></a-sphere>
+                <a-sphere position="1.05 1.12 -0.10" radius="0.14" color="#ef4444" material="emissive: #dc2626; emissiveIntensity: 1.2"></a-sphere>
+                <a-box position="0 0.42 -0.18" width="2.55" height="0.48" depth="0.45" color="#1e293b"></a-box>
+              </a-entity>
+            ` : ''}
+          </a-entity>
+        `;
       }
       container.innerHTML = html;
     }
@@ -679,20 +903,35 @@
       }
     }
 
+    function syncSpeedUI() {
+      const clampedTarget = Math.max(0, Math.min(120, Math.round(targetSpeed)));
+      targetSpeed = clampedTarget;
+      const slider = document.getElementById('speed-slider');
+      if (slider) slider.value = clampedTarget;
+      const targetDisp = document.getElementById('target-speed-display');
+      if (targetDisp) targetDisp.innerText = clampedTarget;
+    }
+
     function setTargetSpeed(val) {
       if (val === -15) {
-        targetSpeed = Math.max(0, targetSpeed - 20);
+        targetSpeed = Math.max(0, targetSpeed - 10);
       } else {
         targetSpeed = val;
       }
+      syncSpeedUI();
+    }
+
+    function adjustTargetSpeed(deltaKmH) {
+      targetSpeed = Math.max(0, Math.min(120, targetSpeed + deltaKmH));
+      syncSpeedUI();
     }
 
     function updatePhysics(delta) {
-      const accelerationRate = 12.0;
+      const accelerationRate = 14.0;
       if (currentSpeed < targetSpeed) {
         currentSpeed = Math.min(targetSpeed, currentSpeed + accelerationRate * delta);
       } else if (currentSpeed > targetSpeed) {
-        currentSpeed = Math.max(targetSpeed, currentSpeed - (accelerationRate * 1.5) * delta);
+        currentSpeed = Math.max(targetSpeed, currentSpeed - (accelerationRate * 1.6) * delta);
       }
       document.getElementById('speed-display').innerText = Math.round(currentSpeed);
     }
@@ -885,9 +1124,211 @@
     const posts = [];
     const shinkansenPosts = [];
     const ties = [];
+    const tracksideProps = [];
+    const bridgeAndTowerProps = [];
+    const underViaductProps = [];
+    const roadVehicles = [];
+    const crossingVehicles = [];
+    const crossingGateBars = [];
+    const streetSignalLamps = [];
+    const pedestrians = [];
+    let gateAnimTime = 0;
+    let streetSignalTime = 0;
     let stationZ = -260;
-    let doctorYellowZ = -140; // ドクターイエロー初期位置
+    let doctorYellowZ = -140;
     let shinkansenDownZ = 80;
+    let oncomingExpressZ = 90;
+
+    function buildSignalHTML(xPos, yPos, zPos, aspect = "green", isOncoming = false) {
+      const yawDeg = isOncoming ? 0 : 180;
+      const gEmissive = aspect === "green" ? "#16a34a" : "#14532d";
+      const gIntensity = aspect === "green" ? 1.25 : 0.25;
+      const yEmissive = aspect === "yellow" ? "#eab308" : "#713f12";
+      const yIntensity = aspect === "yellow" ? 1.25 : 0.25;
+      const rEmissive = aspect === "red" ? "#dc2626" : "#7f1d1d";
+      const rIntensity = aspect === "red" ? 1.25 : 0.25;
+
+      return `
+        <a-entity position="${xPos} ${yPos} ${zPos}">
+          <a-cylinder position="0 1.75 0" radius="0.045" height="3.5" color="#475569"></a-cylinder>
+          <a-entity position="0 3.25 0" rotation="0 ${yawDeg} 0">
+            <a-box position="0 0 0" width="0.24" height="0.72" depth="0.22" color="#0f172a"></a-box>
+            <a-box position="0 0 0.125" width="0.26" height="0.74" depth="0.03" color="#1e293b"></a-box>
+            <a-sphere position="0 0.18 0.13" radius="0.055" color="#22c55e" material="emissive: ${gEmissive}; emissiveIntensity: ${gIntensity}"></a-sphere>
+            <a-sphere position="0 0.00 0.13" radius="0.055" color="#facc15" material="emissive: ${yEmissive}; emissiveIntensity: ${yIntensity}"></a-sphere>
+            <a-sphere position="0 -0.18 0.13" radius="0.055" color="#ef4444" material="emissive: ${rEmissive}; emissiveIntensity: ${rIntensity}"></a-sphere>
+            <a-box position="0 0.24 0.16" width="0.16" height="0.02" depth="0.09" color="#0f172a"></a-box>
+            <a-box position="0 0.06 0.16" width="0.16" height="0.02" depth="0.09" color="#0f172a"></a-box>
+            <a-box position="0 -0.12 0.16" width="0.16" height="0.02" depth="0.09" color="#0f172a"></a-box>
+          </a-entity>
+        </a-entity>
+      `;
+    }
+
+    function buildRoadTrafficLightHTML(x, y, z, yaw = 0, idPrefix = "sig") {
+      return `
+        <a-entity position="${x} ${y} ${z}" rotation="0 ${yaw} 0">
+          <a-cylinder position="0 1.9 0" radius="0.06" height="3.8" color="#cbd5e1"></a-cylinder>
+          <a-box position="0 3.55 0.35" width="0.12" height="0.08" depth="0.85" color="#cbd5e1"></a-box>
+          <a-entity position="0 3.55 0.78">
+            <a-box position="0 0 0" width="0.76" height="0.28" depth="0.18" color="#0f172a"></a-box>
+            <a-sphere class="${idPrefix}-red" position="-0.22 0 0.10" radius="0.075" color="#ef4444" material="emissive: #dc2626; emissiveIntensity: 0.2"></a-sphere>
+            <a-sphere class="${idPrefix}-yellow" position="0.00 0 0.10" radius="0.075" color="#facc15" material="emissive: #eab308; emissiveIntensity: 0.2"></a-sphere>
+            <a-sphere class="${idPrefix}-green" position="0.22 0 0.10" radius="0.075" color="#22c55e" material="emissive: #16a34a; emissiveIntensity: 1.4"></a-sphere>
+          </a-entity>
+        </a-entity>
+      `;
+    }
+
+    // 路側駐車枠（白線枠＋停車車両）を生成
+    function buildParkingBaysHTML() {
+      let baysHtml = '';
+      // 右側路側帯（x = 7.7）および左側路側帯（x = -3.9）に縦列駐車枠を描画
+      const leftBayZs = [-14, -8.5, 8.5, 14];
+      const rightBayZs = [-14, -8.5, 8.5, 14];
+
+      leftBayZs.forEach((bz, idx) => {
+        baysHtml += `
+          <a-entity position="-3.9 -8.27 ${bz}">
+            <a-box position="0 0 -2.1" width="1.9" height="0.02" depth="0.08" color="#f8fafc"></a-box>
+            <a-box position="0 0 2.1" width="1.9" height="0.02" depth="0.08" color="#f8fafc"></a-box>
+            <a-box position="-0.92 0 0" width="0.06" height="0.02" depth="4.28" color="#f8fafc"></a-box>
+          </a-entity>
+        `;
+        if (idx === 0 || idx === 3) {
+          const parkColors = ["#94a3b8", "#475569", "#64748b", "#334155"];
+          baysHtml += `
+            <a-entity position="-3.9 -8.30 ${bz}">
+              ${buildVehicleHTML("sedan", parkColors[idx % parkColors.length], 0)}
+            </a-entity>
+          `;
+        }
+      });
+
+      rightBayZs.forEach((bz, idx) => {
+        baysHtml += `
+          <a-entity position="7.7 -8.27 ${bz}">
+            <a-box position="0 0 -2.1" width="1.9" height="0.02" depth="0.08" color="#f8fafc"></a-box>
+            <a-box position="0 0 2.1" width="1.9" height="0.02" depth="0.08" color="#f8fafc"></a-box>
+            <a-box position="0.92 0 0" width="0.06" height="0.02" depth="4.28" color="#f8fafc"></a-box>
+          </a-entity>
+        `;
+        if (idx === 1 || idx === 2) {
+          const parkColors = ["#cbd5e1", "#e2e8f0", "#94a3b8", "#64748b"];
+          baysHtml += `
+            <a-entity position="7.7 -8.30 ${bz}">
+              ${buildVehicleHTML("van", parkColors[idx % parkColors.length], 180)}
+            </a-entity>
+          `;
+        }
+      });
+
+      return baysHtml;
+    }
+
+    function buildKansaiMachiyaHTML(x, y, z, styleIdx = 0) {
+      const palettes = [
+        { wall: "#3b281e", trim: "#5c3c28", roof: "#2b303a", noren: "#1e3a8a", sign: "#fef3c7" },
+        { wall: "#4a3728", trim: "#2d1d14", roof: "#1f2937", noren: "#7f1d1d", sign: "#ecfccb" },
+        { wall: "#57493c", trim: "#38281c", roof: "#334155", noren: "#065f46", sign: "#e0f2fe" }
+      ];
+      const p = palettes[styleIdx % palettes.length];
+      return `
+        <a-entity position="${x} ${y} ${z}">
+          <a-box position="0 1.4 0" width="6.8" height="2.8" depth="11.0" color="${p.wall}" material="roughness: 0.85"></a-box>
+          <a-box position="0 3.35 0" width="6.4" height="1.2" depth="10.4" color="${p.trim}" material="roughness: 0.85"></a-box>
+          <a-box position="0 4.08 0" width="7.4" height="0.24" depth="11.6" rotation="0 0 -6" color="${p.roof}"></a-box>
+          <a-box position="-3.42 1.25 -2.2" width="0.06" height="1.5" depth="2.4" color="#2b170e"></a-box>
+          <a-box position="-3.42 1.25 2.2" width="0.06" height="1.5" depth="2.4" color="#2b170e"></a-box>
+          <a-box position="-3.46 2.15 0" width="0.04" height="0.65" depth="1.8" color="${p.noren}"></a-box>
+          <a-box position="-3.52 2.45 0" width="0.08" height="0.34" depth="2.2" color="${p.sign}" material="emissive: #fde68a; emissiveIntensity: 0.35"></a-box>
+          <a-box position="-3.68 1.55 3.6" width="0.36" height="0.72" depth="0.36" color="#fef3c7" material="emissive: #f59e0b; emissiveIntensity: 0.85"></a-box>
+          <a-entity position="-3.75 0.95 -4.2">
+            <a-box position="0 0 0" width="0.72" height="1.9" depth="1.15" color="#f8fafc"></a-box>
+            <a-box position="0 0.25 0" width="0.74" height="0.85" depth="0.95" color="#0284c7" material="emissive: #38bdf8; emissiveIntensity: 0.55"></a-box>
+            <a-box position="0 -0.45 0" width="0.74" height="0.35" depth="0.95" color="#ef4444"></a-box>
+          </a-entity>
+          <a-cylinder position="-4.1 3.8 5.2" radius="0.11" height="7.6" color="#64748b"></a-cylinder>
+          <a-box position="-3.65 6.8 5.2" width="1.0" height="0.10" depth="0.16" color="#94a3b8"></a-box>
+          <a-box position="-3.25 6.72 5.2" width="0.32" height="0.06" depth="0.14" color="#fef9c3" material="emissive: #fde047; emissiveIntensity: 0.9"></a-box>
+        </a-entity>
+      `;
+    }
+
+    function buildTrussBridgeHTML() {
+      let trussHtml = `
+        <a-box position="1.9 -1.35 0" width="8.6" height="0.65" depth="32" color="#334155" material="metalness: 0.6; roughness: 0.4"></a-box>
+        <a-cylinder position="-1.5 -5.1 -14" radius="0.58" height="7.2" color="#94a3b8"></a-cylinder>
+        <a-cylinder position="5.3 -5.1 -14" radius="0.58" height="7.2" color="#94a3b8"></a-cylinder>
+        <a-cylinder position="-1.5 -5.1 14" radius="0.58" height="7.2" color="#94a3b8"></a-cylinder>
+        <a-cylinder position="5.3 -5.1 14" radius="0.58" height="7.2" color="#94a3b8"></a-cylinder>
+      `;
+
+      const sideXs = [-2.2, 6.0];
+      const panels = 8;
+      const panelLen = 4.0;
+      const startZ = -14;
+
+      sideXs.forEach(sx => {
+        trussHtml += `<a-box position="${sx} -1.45 0" width="0.22" height="0.22" depth="32" color="#475569"></a-box>`;
+        trussHtml += `<a-box position="${sx} -3.65 0" width="0.22" height="0.22" depth="32" color="#334155"></a-box>`;
+        for (let p = 0; p < panels; p++) {
+          const pz = startZ + p * panelLen;
+          const midZ = pz + panelLen * 0.5;
+          trussHtml += `<a-box position="${sx} -2.55 ${pz}" width="0.16" height="2.2" depth="0.16" color="#64748b"></a-box>`;
+          trussHtml += `<a-box position="${sx} -2.55 ${midZ}" width="0.14" height="3.1" depth="0.14" rotation="38 0 0" color="#475569"></a-box>`;
+          trussHtml += `<a-box position="${sx} -2.55 ${midZ}" width="0.14" height="3.1" depth="0.14" rotation="-38 0 0" color="#64748b"></a-box>`;
+        }
+        trussHtml += `<a-box position="${sx} -2.55 ${startZ + panels * panelLen}" width="0.16" height="2.2" depth="0.16" color="#64748b"></a-box>`;
+      });
+
+      return trussHtml;
+    }
+
+    function buildVehicleHTML(vehicleType = "sedan", bodyColor = "#e2e8f0", yaw = 180) {
+      const isBus = vehicleType === "bus";
+      const isVan = vehicleType === "van";
+      const len = isBus ? 7.6 : (isVan ? 4.2 : 3.7);
+      const width = isBus ? 2.1 : 1.62;
+      const hBody = isBus ? 1.5 : (isVan ? 1.02 : 0.76);
+      const hCabin = isBus ? 1.0 : (isVan ? 0.72 : 0.50);
+      const cabinDepth = isBus ? 6.2 : (isVan ? 2.5 : 1.85);
+      const cabinZ = isBus ? 0.1 : (isVan ? -0.2 : -0.1);
+
+      return `
+        <a-entity class="vehicle-rot-root" rotation="0 ${yaw} 0">
+          <a-box position="0 ${hBody * 0.5 + 0.24} 0" width="${width}" height="${hBody}" depth="${len}" color="${bodyColor}" material="metalness: 0.35; roughness: 0.35"></a-box>
+          ${isBus ? `
+            <a-box position="0 ${hBody * 0.45 + 0.24} 0" width="${width + 0.03}" height="0.18" depth="${len}" color="#0284c7"></a-box>
+            <a-box position="0 ${hBody * 0.78 + 0.24} 0" width="${width + 0.03}" height="0.45" depth="${len - 0.8}" color="#1e293b"></a-box>
+          ` : `
+            <a-box position="0 ${hBody + hCabin * 0.5 + 0.20} ${cabinZ}" width="${width - 0.16}" height="${hCabin}" depth="${cabinDepth}" color="#1e293b" material="metalness: 0.6; roughness: 0.2"></a-box>
+          `}
+          <a-cylinder position="${-width * 0.48} 0.34 ${len * 0.30}" radius="0.34" height="0.24" rotation="0 0 90" color="#171717"></a-cylinder>
+          <a-cylinder position="${width * 0.48} 0.34 ${len * 0.30}" radius="0.34" height="0.24" rotation="0 0 90" color="#171717"></a-cylinder>
+          <a-cylinder position="${-width * 0.48} 0.34 ${-len * 0.30}" radius="0.34" height="0.24" rotation="0 0 90" color="#171717"></a-cylinder>
+          <a-cylinder position="${width * 0.48} 0.34 ${-len * 0.30}" radius="0.34" height="0.24" rotation="0 0 90" color="#171717"></a-cylinder>
+          <a-box position="${-width * 0.34} ${hBody * 0.52 + 0.24} ${len * 0.5 + 0.02}" width="0.28" height="0.16" depth="0.05" color="#fef9c3" material="emissive: #fef08a; emissiveIntensity: 1.15"></a-box>
+          <a-box position="${width * 0.34} ${hBody * 0.52 + 0.24} ${len * 0.5 + 0.02}" width="0.28" height="0.16" depth="0.05" color="#fef9c3" material="emissive: #fef08a; emissiveIntensity: 1.15"></a-box>
+          <a-box class="brake-lamp" position="${-width * 0.34} ${hBody * 0.52 + 0.24} ${-len * 0.5 - 0.02}" width="0.28" height="0.16" depth="0.05" color="#ef4444" material="emissive: #dc2626; emissiveIntensity: 0.9"></a-box>
+          <a-box class="brake-lamp" position="${width * 0.34} ${hBody * 0.52 + 0.24} ${-len * 0.5 - 0.02}" width="0.28" height="0.16" depth="0.05" color="#ef4444" material="emissive: #dc2626; emissiveIntensity: 0.9"></a-box>
+        </a-entity>
+      `;
+    }
+
+    function buildPedestrianHTML(coatColor = "#334155", pantsColor = "#1e293b") {
+      return `
+        <a-entity>
+          <a-cylinder class="leg-l" position="-0.11 0.38 0" radius="0.08" height="0.76" color="${pantsColor}"></a-cylinder>
+          <a-cylinder class="leg-r" position="0.11 0.38 0" radius="0.08" height="0.76" color="${pantsColor}"></a-cylinder>
+          <a-box position="0 1.04 0" width="0.38" height="0.58" depth="0.22" color="${coatColor}"></a-box>
+          <a-cylinder class="arm-l" position="-0.25 1.02 0" radius="0.055" height="0.52" color="${coatColor}"></a-cylinder>
+          <a-cylinder class="arm-r" position="0.25 1.02 0" radius="0.055" height="0.52" color="${coatColor}"></a-cylinder>
+          <a-sphere position="0 1.47 0" radius="0.13" color="#fde68a"></a-sphere>
+          <a-sphere position="0 1.52 -0.02" radius="0.135" color="#1e1b18"></a-sphere>
+        </a-entity>
+      `;
+    }
 
     function initScenery() {
       const container = document.getElementById('scenery-posts');
@@ -899,6 +1340,10 @@
           <a-box position="-4.1 0.8 0" width="0.16" height="5.2" depth="0.16" color="#475569"></a-box>
           <a-box position="4.1 0.8 0" width="0.16" height="5.2" depth="0.16" color="#475569"></a-box>
           <a-box position="0 2.5 0" width="8.4" height="0.12" depth="0.12" color="#475569"></a-box>
+          <a-box position="0 3.05 0" width="8.4" height="0.06" depth="0.06" color="#64748b"></a-box>
+          <a-box position="-1.9 2.78 0" width="0.02" height="0.55" depth="0.02" color="#64748b"></a-box>
+          <a-box position="1.9 2.78 0" width="0.02" height="0.55" depth="0.02" color="#64748b"></a-box>
+          <a-box position="0 -5.2 0" width="1.35" height="7.8" depth="1.6" color="#94a3b8"></a-box>
         `;
         container.appendChild(hankyuGate);
         posts.push({ el: hankyuGate, baseZ: zPos });
@@ -908,11 +1353,13 @@
       for (let i = 0; i < 22; i++) {
         const zPos = 20 - (i * 15);
         const skGate = document.createElement('a-entity');
-        skGate.setAttribute('position', `-11.5 2.0 ${zPos}`);
+        skGate.setAttribute('position', `-12.5 2.0 ${zPos}`);
         skGate.innerHTML = `
           <a-box position="-4.6 1.2 0" width="0.18" height="5.8" depth="0.18" color="#64748b"></a-box>
           <a-box position="4.6 1.2 0" width="0.18" height="5.8" depth="0.18" color="#64748b"></a-box>
           <a-box position="0 3.0 0" width="9.4" height="0.14" depth="0.14" color="#64748b"></a-box>
+          <a-box position="0 3.55 0" width="9.4" height="0.06" depth="0.06" color="#94a3b8"></a-box>
+          <a-box position="0 -5.7 0" width="1.5" height="7.8" depth="1.8" color="#cbd5e1"></a-box>
         `;
         skContainer.appendChild(skGate);
         shinkansenPosts.push({ el: skGate, baseZ: zPos });
@@ -930,6 +1377,384 @@
         tiesContainer.appendChild(tie);
         ties.push({ el: tie, baseZ: zPos });
       }
+
+      const propsContainer = document.getElementById('trackside-details');
+      for (let i = 0; i < 14; i++) {
+        const zPos = 10 - (i * 26);
+        const propEl = document.createElement('a-entity');
+        propEl.setAttribute('position', `0 0 ${zPos}`);
+        const hasSignal = (i % 3 === 0);
+        const aspect = (i % 6 === 0) ? "yellow" : "green";
+        const treeOffsetX = ((i * 19) % 22) + 35;
+
+        propEl.innerHTML = `
+          <a-box position="-2.18 0.55 0" width="0.08" height="1.1" depth="0.08" color="#f8fafc"></a-box>
+          <a-box position="-2.18 0.92 0" width="0.09" height="0.22" depth="0.09" color="#1e293b"></a-box>
+          ${hasSignal ? `
+            ${buildSignalHTML(-2.22, 0.0, 0, aspect, false)}
+            ${buildSignalHTML(5.45, 0.0, -4.0, "green", true)}
+          ` : ''}
+          <a-cylinder position="${treeOffsetX} -7.8 2.5" radius="0.22" height="1.6" color="#5c4033"></a-cylinder>
+          <a-cone position="${treeOffsetX} -6.4 2.5" radius-bottom="1.45" radius-top="0.15" height="3.2" color="#2d6a4f" material="roughness: 0.9"></a-cone>
+          <a-cylinder position="35.2 -5.4 0" radius="0.07" height="2.4" color="#64748b"></a-cylinder>
+          <a-box position="34.7 -4.2 0" width="0.9" height="0.08" depth="0.18" color="#94a3b8"></a-box>
+          <a-box position="34.5 -4.26 0" width="0.35" height="0.04" depth="0.14" color="#fef9c3" material="emissive: #fde047; emissiveIntensity: 0.65"></a-box>
+        `;
+        propsContainer.appendChild(propEl);
+        tracksideProps.push({ el: propEl, baseZ: zPos });
+      }
+
+      const bridgeContainer = document.getElementById('river-bridge-and-towers');
+      for (let i = 1; i < 4; i++) {
+        const zPos = -40 - (i * 95);
+        const bEl = document.createElement('a-entity');
+        bEl.setAttribute('position', `0 0 ${zPos}`);
+        const towerX = (i % 2 === 0) ? 47.5 : 79.5;
+        const towerBaseY = -8.4;
+
+        bEl.innerHTML = `
+          ${buildTrussBridgeHTML()}
+          <a-entity position="${towerX} ${towerBaseY} 0">
+            <a-cylinder position="-1.4 8.0 -1.4" radius="0.14" height="16.0" rotation="4 0 3" color="#64748b" material="metalness: 0.7; roughness: 0.35"></a-cylinder>
+            <a-cylinder position="1.4 8.0 -1.4" radius="0.14" height="16.0" rotation="4 0 -3" color="#64748b" material="metalness: 0.7; roughness: 0.35"></a-cylinder>
+            <a-cylinder position="-1.4 8.0 1.4" radius="0.14" height="16.0" rotation="-4 0 3" color="#64748b" material="metalness: 0.7; roughness: 0.35"></a-cylinder>
+            <a-cylinder position="1.4 8.0 1.4" radius="0.14" height="16.0" rotation="-4 0 -3" color="#64748b" material="metalness: 0.7; roughness: 0.35"></a-cylinder>
+            <a-box position="0 4.5 0" width="2.4" height="0.12" depth="2.4" color="#475569"></a-box>
+            <a-box position="0 9.0 0" width="1.9" height="0.12" depth="1.9" color="#475569"></a-box>
+            <a-box position="0 13.0 0" width="1.4" height="0.12" depth="1.4" color="#475569"></a-box>
+            <a-box position="0 12.2 0" width="6.2" height="0.16" depth="0.22" color="#64748b"></a-box>
+            <a-box position="0 14.6 0" width="4.4" height="0.16" depth="0.22" color="#64748b"></a-box>
+            <a-box position="0 16.5 0" width="2.2" height="0.14" depth="0.18" color="#64748b"></a-box>
+            <a-box position="-2.8 12.05 -47.5" width="0.03" height="0.03" depth="95" color="#334155"></a-box>
+            <a-box position="2.8 12.05 -47.5" width="0.03" height="0.03" depth="95" color="#334155"></a-box>
+            <a-box position="-1.9 14.45 -47.5" width="0.03" height="0.03" depth="95" color="#334155"></a-box>
+            <a-box position="1.9 14.45 -47.5" width="0.03" height="0.03" depth="95" color="#334155"></a-box>
+            <a-box position="0 16.38 -47.5" width="0.025" height="0.025" depth="95" color="#475569"></a-box>
+          </a-entity>
+        `;
+        bridgeContainer.appendChild(bEl);
+        bridgeAndTowerProps.push({ el: bEl, baseZ: zPos });
+      }
+
+      const underContainer = document.getElementById('under-viaduct-structures');
+      for (let i = 0; i < 10; i++) {
+        const zPos = 10 - (i * 38);
+        const uEl = document.createElement('a-entity');
+        uEl.setAttribute('position', `0 0 ${zPos}`);
+        const hasMachiya = (i % 2 === 1);
+        const hasCrossRoad = (i % 3 === 0);
+        const signBg = (i % 2 === 0) ? "#1d4ed8" : "#065f46";
+
+        uEl.innerHTML = `
+          <a-cylinder position="-2.45 -5.8 0" radius="0.05" height="4.8" color="#64748b"></a-cylinder>
+          <a-box position="-2.15 -3.45 0" width="0.65" height="0.06" depth="0.14" color="#94a3b8"></a-box>
+          <a-box position="-2.0 -3.50 0" width="0.28" height="0.03" depth="0.10" color="#fef9c3" material="emissive: #fde047; emissiveIntensity: 0.7"></a-box>
+
+          <a-entity position="-6.1 -5.6 4.5">
+            <a-cylinder position="-0.75 -1.1 0" radius="0.04" height="2.2" color="#64748b"></a-cylinder>
+            <a-cylinder position="0.75 -1.1 0" radius="0.04" height="2.2" color="#64748b"></a-cylinder>
+            <a-box position="0 0.15 0" width="1.8" height="0.72" depth="0.08" color="${signBg}"></a-box>
+            <a-box position="0 0.15 0.045" width="1.62" height="0.54" depth="0.02" color="#f8fafc"></a-box>
+            <a-box position="0 0.15 0.055" width="1.25" height="0.16" depth="0.02" color="${signBg}"></a-box>
+          </a-entity>
+
+          <!-- 拡幅車道用 信号機・停止線 -->
+          ${buildRoadTrafficLightHTML(9.2, -8.35, -3.5, 180, "viaduct-up")}
+          <a-box position="5.4 -8.28 -3.5" width="4.4" height="0.02" depth="0.36" color="#f8fafc"></a-box>
+
+          ${buildRoadTrafficLightHTML(-5.4, -8.35, 3.5, 0, "viaduct-down")}
+          <a-box position="-1.6 -8.28 3.5" width="4.4" height="0.02" depth="0.36" color="#f8fafc"></a-box>
+
+          ${hasCrossRoad ? `
+            <a-box position="16 -8.35 0" width="42" height="0.16" depth="8.2" color="#272d36" material="roughness: 0.85"></a-box>
+            <a-box position="16 -8.26 0" width="42" height="0.03" depth="0.12" color="#fef08a"></a-box>
+            <a-box position="1.9 -8.27 -4.9" width="13.2" height="0.02" depth="0.45" color="#f8fafc"></a-box>
+            <a-box position="1.9 -8.27 4.9" width="13.2" height="0.02" depth="0.45" color="#f8fafc"></a-box>
+
+            ${buildRoadTrafficLightHTML(9.6, -8.35, -4.6, -90, "cross-ew")}
+            <a-box position="9.0 -8.28 -2.0" width="0.36" height="0.02" depth="3.2" color="#f8fafc"></a-box>
+
+            <a-entity position="-6.4 -8.35 4.4">
+              <a-cylinder position="0 1.4 0" radius="0.06" height="2.8" color="#eab308"></a-cylinder>
+              <a-box position="0 2.75 0" width="0.75" height="0.24" depth="0.08" color="#f8fafc"></a-box>
+              <a-box position="0 2.75 0.05" width="0.10" height="0.22" depth="0.02" color="#dc2626"></a-box>
+              <a-sphere position="-0.22 2.42 0.08" radius="0.09" color="#ef4444" material="emissive: #dc2626; emissiveIntensity: 1.3"></a-sphere>
+              <a-sphere position="0.22 2.42 0.08" radius="0.09" color="#ef4444" material="emissive: #dc2626; emissiveIntensity: 1.3"></a-sphere>
+              <a-entity class="crossing-gate-pivot" position="0 1.05 0" rotation="0 0 -18">
+                <a-box position="1.55 0 0" width="3.1" height="0.08" depth="0.08" color="#facc15"></a-box>
+                <a-box position="0.95 0 0.045" width="0.45" height="0.085" depth="0.01" color="#1e293b"></a-box>
+                <a-box position="1.85 0 0.045" width="0.45" height="0.085" depth="0.01" color="#1e293b"></a-box>
+                <a-box position="2.75 0 0.045" width="0.45" height="0.085" depth="0.01" color="#1e293b"></a-box>
+              </a-entity>
+            </a-entity>
+          ` : `
+            ${buildParkingBaysHTML()}
+          `}
+
+          ${hasMachiya ? buildKansaiMachiyaHTML(14.6, -8.35, 0, i) : ''}
+        `;
+        underContainer.appendChild(uEl);
+        underViaductProps.push({ el: uEl, baseZ: zPos, hasCrossRoad });
+        uEl.querySelectorAll('.crossing-gate-pivot').forEach(pivot => {
+          crossingGateBars.push(pivot);
+        });
+        uEl.querySelectorAll('.viaduct-up-red').forEach(el => streetSignalLamps.push({ el, phase: "up", color: "red" }));
+        uEl.querySelectorAll('.viaduct-up-yellow').forEach(el => streetSignalLamps.push({ el, phase: "up", color: "yellow" }));
+        uEl.querySelectorAll('.viaduct-up-green').forEach(el => streetSignalLamps.push({ el, phase: "up", color: "green" }));
+        uEl.querySelectorAll('.viaduct-down-red').forEach(el => streetSignalLamps.push({ el, phase: "down", color: "red" }));
+        uEl.querySelectorAll('.viaduct-down-yellow').forEach(el => streetSignalLamps.push({ el, phase: "down", color: "yellow" }));
+        uEl.querySelectorAll('.viaduct-down-green').forEach(el => streetSignalLamps.push({ el, phase: "down", color: "green" }));
+        uEl.querySelectorAll('.cross-ew-red').forEach(el => streetSignalLamps.push({ el, phase: "cross", color: "red" }));
+        uEl.querySelectorAll('.cross-ew-yellow').forEach(el => streetSignalLamps.push({ el, phase: "cross", color: "yellow" }));
+        uEl.querySelectorAll('.cross-ew-green').forEach(el => streetSignalLamps.push({ el, phase: "cross", color: "green" }));
+      }
+
+      const vehiclesContainer = document.getElementById('road-vehicles');
+      const vehicleConfigs = [
+        { lane: "under_up",   x: 5.4,  y: -8.30, z: -2.0,  maxSpeed: 21, type: "sedan", color: "#f8fafc", yaw: 180 },
+        { lane: "under_up",   x: 5.4,  y: -8.30, z: 4.5,   maxSpeed: 20, type: "van",   color: "#cbd5e1", yaw: 180 },
+        { lane: "under_up",   x: 5.4,  y: -8.30, z: 11.0,  maxSpeed: 19, type: "bus",   color: "#e2e8f0", yaw: 180 },
+        { lane: "under_up",   x: 5.4,  y: -8.30, z: -125,  maxSpeed: 23, type: "sedan", color: "#fb7185", yaw: 180 },
+        { lane: "under_down", x: -1.6, y: -8.30, z: 2.0,   maxSpeed: 20, type: "sedan", color: "#38bdf8", yaw: 0 },
+        { lane: "under_down", x: -1.6, y: -8.30, z: -4.5,  maxSpeed: 21, type: "van",   color: "#facc15", yaw: 0 },
+        { lane: "under_down", x: -1.6, y: -8.30, z: -11.0, maxSpeed: 19, type: "sedan", color: "#f472b6", yaw: 0 },
+        { lane: "under_down", x: -1.6, y: -8.30, z: -115,  maxSpeed: 22, type: "bus",   color: "#e2e8f0", yaw: 0 },
+        { lane: "levee",      x: 33.0, y: -6.40, z: 15,    maxSpeed: 26, type: "sedan", color: "#f87171", yaw: 0 },
+        { lane: "levee",      x: 33.0, y: -6.40, z: -155,  maxSpeed: 25, type: "van",   color: "#e2e8f0", yaw: 180 }
+      ];
+
+      vehicleConfigs.forEach(vc => {
+        const carEntity = document.createElement('a-entity');
+        carEntity.setAttribute('position', `${vc.x} ${vc.y} ${vc.z}`);
+        carEntity.innerHTML = buildVehicleHTML(vc.type, vc.color, vc.yaw);
+        vehiclesContainer.appendChild(carEntity);
+        roadVehicles.push({
+          el: carEntity,
+          lane: vc.lane,
+          x: vc.x,
+          y: vc.y,
+          z: vc.z,
+          maxSpeed: vc.maxSpeed,
+          speed: vc.maxSpeed * 0.7,
+          state: "moving",
+          yaw: vc.yaw,
+          brakeLamps: Array.from(carEntity.querySelectorAll('.brake-lamp'))
+        });
+      });
+
+      // 交差点を通過または右左折する車両（turnDir: 1=右折方向, -1=左折方向, 0=直進）
+      const crossingConfigs = [
+        { anchorIdx: 0, baseX: -14, y: -8.30, zOffset: -2.0, dirX: 1,  maxSpeed: 14, type: "bus",   color: "#f8fafc", baseYaw: 90,  turnDir: 1 },
+        { anchorIdx: 0, baseX: 20,  y: -8.30, zOffset: 2.0,  dirX: -1, maxSpeed: 16, type: "sedan", color: "#fbbf24", baseYaw: -90, turnDir: -1 },
+        { anchorIdx: 3, baseX: -18, y: -8.30, zOffset: -2.0, dirX: 1,  maxSpeed: 15, type: "sedan", color: "#34d399", baseYaw: 90,  turnDir: -1 },
+        { anchorIdx: 6, baseX: 22,  y: -8.30, zOffset: 2.0,  dirX: -1, maxSpeed: 13, type: "bus",   color: "#e2e8f0", baseYaw: -90, turnDir: 1 }
+      ];
+
+      crossingConfigs.forEach(cc => {
+        const cEntity = document.createElement('a-entity');
+        cEntity.innerHTML = buildVehicleHTML(cc.type, cc.color, cc.baseYaw);
+        vehiclesContainer.appendChild(cEntity);
+        crossingVehicles.push({
+          el: cEntity,
+          rotRoot: cEntity.querySelector('.vehicle-rot-root'),
+          anchorIdx: cc.anchorIdx,
+          x: cc.baseX,
+          y: cc.y,
+          zOffset: cc.zOffset,
+          dirX: cc.dirX,
+          maxSpeed: cc.maxSpeed,
+          speed: cc.maxSpeed * 0.7,
+          state: "moving",
+          baseYaw: cc.baseYaw,
+          turnDir: cc.turnDir,
+          brakeLamps: Array.from(cEntity.querySelectorAll('.brake-lamp'))
+        });
+      });
+
+      const pedContainer = document.getElementById('pedestrians-container');
+      const pedConfigs = [
+        { mode: "sidewalk", x: -6.0, z: -6,  dirZ: 1,  speed: 1.4, coat: "#2563eb", pants: "#1e293b", phase: 0.0 },
+        { mode: "sidewalk", x: -5.8, z: -42, dirZ: -1, speed: 1.2, coat: "#db2777", pants: "#334155", phase: 1.4 },
+        { mode: "sidewalk", x: 9.8,  z: -18, dirZ: -1, speed: 1.3, coat: "#059669", pants: "#1e293b", phase: 2.3 },
+        { mode: "sidewalk", x: 9.6,  z: -65, dirZ: 1,  speed: 1.5, coat: "#d97706", pants: "#27272a", phase: 3.1 },
+        { mode: "crosswalk", anchorIdx: 0, zOffset: -4.9, x: -5.8, dirX: 1,  speed: 1.6, coat: "#7c3aed", pants: "#1e293b", phase: 0.5 },
+        { mode: "crosswalk", anchorIdx: 0, zOffset: 4.9,  x: 9.6,  dirX: -1, speed: 1.5, coat: "#ea580c", pants: "#334155", phase: 1.9 },
+        { mode: "crosswalk", anchorIdx: 3, zOffset: -4.9, x: 9.6,  dirX: -1, speed: 1.4, coat: "#0284c7", pants: "#1e293b", phase: 2.7 },
+        { mode: "crosswalk", anchorIdx: 6, zOffset: 4.9,  x: -5.8, dirX: 1,  speed: 1.6, coat: "#be123c", pants: "#1e293b", phase: 3.8 }
+      ];
+
+      pedConfigs.forEach(pc => {
+        const pEl = document.createElement('a-entity');
+        pEl.innerHTML = buildPedestrianHTML(pc.coat, pc.pants);
+        pedContainer.appendChild(pEl);
+        pedestrians.push({
+          el: pEl,
+          legL: pEl.querySelector('.leg-l'),
+          legR: pEl.querySelector('.leg-r'),
+          armL: pEl.querySelector('.arm-l'),
+          armR: pEl.querySelector('.arm-r'),
+          mode: pc.mode,
+          anchorIdx: pc.anchorIdx ?? 0,
+          x: pc.x,
+          z: pc.z ?? 0,
+          zOffset: pc.zOffset ?? 0,
+          dirX: pc.dirX ?? 0,
+          dirZ: pc.dirZ ?? 0,
+          speed: pc.speed,
+          walkPhase: pc.phase
+        });
+      });
+    }
+
+    function getTrafficLightAspect(phase, t) {
+      const offset = phase === "up" ? 0 : (phase === "down" ? 3.5 : 6.0);
+      const localT = (t + offset) % 12.0;
+      if (localT < 5.0) return "green";
+      if (localT < 7.0) return "yellow";
+      return "red";
+    }
+
+    function setLampGlow(lampEl, active, intensity = 1.4) {
+      if (!lampEl) return;
+      lampEl.setAttribute('material', `emissiveIntensity: ${active ? intensity : 0.18}`);
+    }
+
+    function setBrakeGlow(brakeLamps, braking) {
+      brakeLamps.forEach(lamp => {
+        lamp.setAttribute('material', `emissiveIntensity: ${braking ? 2.2 : 0.7}`);
+      });
+    }
+
+    function updateSignalsAndGates(delta) {
+      gateAnimTime += delta;
+      streetSignalTime += delta;
+
+      const cycle = (gateAnimTime % 9.0) / 9.0;
+      let targetAngle = -12;
+      if (cycle < 0.25) {
+        const t = cycle / 0.25;
+        targetAngle = -12 - 66 * (t * t * (3 - 2 * t));
+      } else if (cycle < 0.65) {
+        targetAngle = -78;
+      } else if (cycle < 0.85) {
+        const t = (cycle - 0.65) / 0.20;
+        targetAngle = -78 + 66 * (t * t * (3 - 2 * t));
+      } else {
+        targetAngle = -12;
+      }
+
+      crossingGateBars.forEach(pivot => {
+        pivot.setAttribute('rotation', `0 0 ${targetAngle}`);
+      });
+
+      const upAspect = getTrafficLightAspect("up", streetSignalTime);
+      const downAspect = getTrafficLightAspect("down", streetSignalTime);
+      const crossAspect = getTrafficLightAspect("cross", streetSignalTime);
+
+      streetSignalLamps.forEach(item => {
+        const activeAspect = item.phase === "up" ? upAspect : (item.phase === "down" ? downAspect : crossAspect);
+        setLampGlow(item.el, item.color === activeAspect, item.color === "green" ? 1.5 : 1.7);
+      });
+
+      return {
+        upAspect,
+        downAspect,
+        crossAspect,
+        gateClosed: targetAngle < -42
+      };
+    }
+
+    function stepVehicleControl(veh, signalStopDist, followerGapDist, delta) {
+      const accel = 11.5;
+      const normalDecel = 18.0;
+      const hardDecel = 34.0;
+      const tandemGap = 5.4;
+
+      let effectiveDist = Infinity;
+      if (signalStopDist !== null && signalStopDist >= 0) {
+        effectiveDist = Math.min(effectiveDist, signalStopDist);
+      }
+      if (followerGapDist !== null && followerGapDist >= 0) {
+        effectiveDist = Math.min(effectiveDist, Math.max(0, followerGapDist - tandemGap));
+      }
+
+      if (effectiveDist < Infinity) {
+        if (effectiveDist <= 0.65) {
+          veh.speed = 0;
+          veh.state = "stopped";
+          setBrakeGlow(veh.brakeLamps, false);
+          return;
+        }
+        const safeSpeed = Math.sqrt(2 * 14.0 * Math.max(0, effectiveDist - 0.5));
+        if (veh.speed > safeSpeed) {
+          const decelRate = effectiveDist < 4.5 ? hardDecel : normalDecel;
+          veh.speed = Math.max(0, Math.min(safeSpeed, veh.speed - decelRate * delta));
+          veh.state = veh.speed > 0.1 ? "stopping" : "stopped";
+          setBrakeGlow(veh.brakeLamps, veh.state === "stopping");
+          return;
+        }
+      }
+
+      if (veh.speed < 0.2) {
+        veh.state = "starting";
+      } else if (veh.speed < veh.maxSpeed * 0.96) {
+        veh.state = "starting";
+      } else {
+        veh.state = "moving";
+      }
+      veh.speed = Math.min(veh.maxSpeed, veh.speed + accel * delta);
+      setBrakeGlow(veh.brakeLamps, false);
+    }
+
+    function updatePedestrians(signalState, currentZOffset, delta) {
+      const canCross = (signalState.upAspect === "red" || signalState.downAspect === "red");
+
+      pedestrians.forEach(ped => {
+        if (ped.mode === "sidewalk") {
+          ped.z += ped.dirZ * ped.speed * delta;
+          if (ped.z > 25) ped.z = -240;
+          if (ped.z < -240) ped.z = 25;
+
+          ped.walkPhase += delta * ped.speed * 5.2;
+          const swing = Math.sin(ped.walkPhase) * 28;
+          ped.legL.setAttribute('rotation', `${swing} 0 0`);
+          ped.legR.setAttribute('rotation', `${-swing} 0 0`);
+          ped.armL.setAttribute('rotation', `${-swing * 0.7} 0 0`);
+          ped.armR.setAttribute('rotation', `${swing * 0.7} 0 0`);
+
+          const yaw = ped.dirZ > 0 ? 0 : 180;
+          ped.el.setAttribute('position', `${ped.x} -8.17 ${ped.z + currentZOffset}`);
+          ped.el.setAttribute('rotation', `0 ${yaw} 0`);
+        } else {
+          const anchor = underViaductProps[ped.anchorIdx];
+          const roadZ = anchor ? (anchor.baseZ + currentZOffset + ped.zOffset) : (currentZOffset + ped.zOffset);
+          const nearCurbX = ped.dirX > 0 ? -5.6 : 9.4;
+          const distToCurb = ped.dirX > 0 ? (nearCurbX - ped.x) : (ped.x - nearCurbX);
+          const isOnCrosswalk = (ped.x > -5.2 && ped.x < 9.0);
+
+          let moving = true;
+          if (!canCross && !isOnCrosswalk && distToCurb >= -0.3 && distToCurb < 1.2) {
+            moving = false;
+          }
+
+          if (moving) {
+            ped.x += ped.dirX * ped.speed * delta;
+            if (ped.dirX > 0 && ped.x > 10.2) ped.x = -6.2;
+            if (ped.dirX < 0 && ped.x < -6.2) ped.x = 10.2;
+            ped.walkPhase += delta * ped.speed * 5.6;
+          }
+
+          const swing = moving ? Math.sin(ped.walkPhase) * 32 : 0;
+          ped.legL.setAttribute('rotation', `${swing} 0 0`);
+          ped.legR.setAttribute('rotation', `${-swing} 0 0`);
+          ped.armL.setAttribute('rotation', `${-swing * 0.75} 0 0`);
+          ped.armR.setAttribute('rotation', `${swing * 0.75} 0 0`);
+
+          const yaw = ped.dirX > 0 ? 90 : -90;
+          ped.el.setAttribute('position', `${ped.x} -8.17 ${roadZ}`);
+          ped.el.setAttribute('rotation', `0 ${yaw} 0`);
+        }
+      });
     }
 
     function updateScenery(delta) {
@@ -946,7 +1771,7 @@
       shinkansenPosts.forEach(post => {
         post.baseZ += moveAmount;
         if (post.baseZ > 20) post.baseZ -= 330;
-        post.el.setAttribute('position', `-11.5 2.0 ${post.baseZ + currentZOffset}`);
+        post.el.setAttribute('position', `-12.5 2.0 ${post.baseZ + currentZOffset}`);
       });
 
       ties.forEach(tie => {
@@ -955,6 +1780,123 @@
         tie.el.setAttribute('position', `0 -0.10 ${tie.baseZ + currentZOffset}`);
       });
 
+      tracksideProps.forEach(prop => {
+        prop.baseZ += moveAmount;
+        if (prop.baseZ > 20) prop.baseZ -= 364;
+        prop.el.setAttribute('position', `0 0 ${prop.baseZ + currentZOffset}`);
+      });
+
+      bridgeAndTowerProps.forEach(prop => {
+        prop.baseZ += moveAmount;
+        if (prop.baseZ > 40) prop.baseZ -= 380;
+        prop.el.setAttribute('position', `0 0 ${prop.baseZ + currentZOffset}`);
+      });
+
+      underViaductProps.forEach(prop => {
+        prop.baseZ += moveAmount;
+        if (prop.baseZ > 20) prop.baseZ -= 380;
+        prop.el.setAttribute('position', `0 0 ${prop.baseZ + currentZOffset}`);
+      });
+
+      const signalState = updateSignalsAndGates(delta);
+
+      // 1. 高架下・堤防道路の車両制御（赤信号縦列停車＋先行車間距離）
+      roadVehicles.forEach((veh, idx) => {
+        let signalStopDist = null;
+        const isUp = veh.lane === "under_up";
+        const isDown = veh.lane === "under_down";
+
+        if (isUp || isDown) {
+          const aspect = isUp ? signalState.upAspect : signalState.downAspect;
+          const stopLineOffset = isUp ? -3.5 : 3.5;
+
+          if (aspect !== "green") {
+            let nearestStop = Infinity;
+            for (let i = 0; i < underViaductProps.length; i++) {
+              const stopZ = underViaductProps[i].baseZ + stopLineOffset;
+              const distToStop = isUp ? (veh.z - stopZ) : (stopZ - veh.z);
+              if (distToStop >= -2.0 && distToStop < 24.0 && distToStop < nearestStop) {
+                nearestStop = distToStop;
+              }
+            }
+            if (nearestStop < Infinity) signalStopDist = Math.max(0, nearestStop);
+          }
+        }
+
+        let followerGapDist = null;
+        let minGap = Infinity;
+        for (let j = 0; j < roadVehicles.length; j++) {
+          if (idx === j) continue;
+          const other = roadVehicles[j];
+          if (other.lane !== veh.lane || other.yaw !== veh.yaw) continue;
+          const forwardGap = isUp ? (veh.z - other.z) : (other.z - veh.z);
+          if (forwardGap > 0 && forwardGap < 16.0 && forwardGap < minGap) {
+            minGap = forwardGap;
+          }
+        }
+        if (minGap < Infinity) followerGapDist = minGap;
+
+        const dirSign = (veh.yaw === 180) ? -1 : 1;
+        stepVehicleControl(veh, signalStopDist, followerGapDist, delta);
+        veh.z += (dirSign * veh.speed + scenerySpeed) * delta;
+
+        if (veh.z > 90) veh.z -= 320;
+        if (veh.z < -250) veh.z += 320;
+        veh.el.setAttribute('position', `${veh.x} ${veh.y} ${veh.z + currentZOffset}`);
+      });
+
+      // 2. 交差道路の車両制御（右左折モーション＋信号・遮断機・車間距離）
+      crossingVehicles.forEach((cv, idx) => {
+        const anchorProp = underViaductProps[cv.anchorIdx];
+        const roadZ = anchorProp ? (anchorProp.baseZ + currentZOffset + cv.zOffset) : (currentZOffset + cv.zOffset);
+        const stopLineX = cv.dirX > 0 ? 8.4 : 9.6;
+        const distToStop = cv.dirX > 0 ? (stopLineX - cv.x) : (cv.x - stopLineX);
+
+        let signalStopDist = null;
+        if ((signalState.crossAspect !== "green" || signalState.gateClosed) && distToStop >= -1.5 && distToStop < 18.0) {
+          signalStopDist = Math.max(0, distToStop);
+        }
+
+        let followerGapDist = null;
+        let minGap = Infinity;
+        for (let j = 0; j < crossingVehicles.length; j++) {
+          if (idx === j) continue;
+          const other = crossingVehicles[j];
+          if (other.anchorIdx !== cv.anchorIdx || other.dirX !== cv.dirX) continue;
+          const forwardGap = cv.dirX > 0 ? (other.x - cv.x) : (cv.x - other.x);
+          if (forwardGap > 0 && forwardGap < 15.0 && forwardGap < minGap) {
+            minGap = forwardGap;
+          }
+        }
+        if (minGap < Infinity) followerGapDist = minGap;
+
+        stepVehicleControl(cv, signalStopDist, followerGapDist, delta);
+        cv.x += cv.dirX * cv.speed * delta;
+
+        if (cv.dirX > 0 && cv.x > 36) cv.x = -18;
+        if (cv.dirX < 0 && cv.x < -18) cv.x = 36;
+
+        // 交差点中央（x = -2 〜 +6）付近での右左折ヨー角補間
+        let turnAngle = 0;
+        let zCurve = 0;
+        if (cv.turnDir !== 0) {
+          const turnStart = cv.dirX > 0 ? -2.0 : 6.0;
+          const turnEnd = cv.dirX > 0 ? 6.0 : -2.0;
+          const progress = Math.max(0, Math.min(1, (cv.x - turnStart) / (turnEnd - turnStart)));
+          const smooth = progress * progress * (3 - 2 * progress);
+          turnAngle = cv.turnDir * 32 * Math.sin(smooth * Math.PI);
+          zCurve = cv.turnDir * (-1.3) * smooth;
+        }
+
+        if (cv.rotRoot) {
+          cv.rotRoot.setAttribute('rotation', `0 ${cv.baseYaw + turnAngle} 0`);
+        }
+        cv.el.setAttribute('position', `${cv.x} ${cv.y} ${roadZ + zCurve}`);
+      });
+
+      // 3. 歩行者更新
+      updatePedestrians(signalState, currentZOffset, delta);
+
       stationZ += moveAmount;
       if (stationZ > 50) stationZ = -260;
       const platform = document.getElementById('station-platform');
@@ -962,21 +1904,26 @@
         platform.setAttribute('position', `-2.3 0 ${stationZ + currentZOffset}`);
       }
 
-      // ドクターイエロー（並走・追い抜き）
-      const dyWorldSpeed = 75.0; // 約250km/h相当で並走・追い抜き
+      const dyWorldSpeed = 75.0;
       const relDySpeed = dyWorldSpeed - scenerySpeed;
       doctorYellowZ -= relDySpeed * delta;
       if (doctorYellowZ < -300) doctorYellowZ = 160;
       const dyEl = document.getElementById('doctor-yellow-train');
-      if (dyEl) dyEl.setAttribute('position', `-9.65 0.65 ${doctorYellowZ + currentZOffset}`);
+      if (dyEl) dyEl.setAttribute('position', `-10.65 0.65 ${doctorYellowZ + currentZOffset}`);
 
-      // N700系（対向・すれ違い）
       const skWorldSpeed = 81.0;
       const relDownSpeed = skWorldSpeed + scenerySpeed;
       shinkansenDownZ += relDownSpeed * delta;
       if (shinkansenDownZ > 240) shinkansenDownZ = -340;
       const skDownEl = document.getElementById('shinkansen-train-down');
-      if (skDownEl) skDownEl.setAttribute('position', `-13.35 0.65 ${shinkansenDownZ + currentZOffset}`);
+      if (skDownEl) skDownEl.setAttribute('position', `-14.35 0.65 ${shinkansenDownZ + currentZOffset}`);
+
+      const expressWorldSpeed = 24.0;
+      const relExpressSpeed = expressWorldSpeed + scenerySpeed;
+      oncomingExpressZ += relExpressSpeed * delta;
+      if (oncomingExpressZ > 220) oncomingExpressZ = -260;
+      const expressEl = document.getElementById('oncoming-express-train');
+      if (expressEl) expressEl.setAttribute('position', `3.8 0.05 ${oncomingExpressZ + currentZOffset}`);
     }
 
     let audioCtx = null;
@@ -1081,7 +2028,9 @@
       buildAllCars();
       buildDoctorYellowModel('doctor-yellow-train', true);
       buildShinkansenModel('shinkansen-train-down', false);
+      buildOncomingExpressModel('oncoming-express-train');
       initScenery();
+      syncSpeedUI();
       requestAnimationFrame(animationLoop);
 
       const rig = document.getElementById('rig');
