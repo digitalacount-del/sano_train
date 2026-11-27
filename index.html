@@ -210,7 +210,7 @@
     <a-entity id="scene-sun" light="type: directional; color: #ffebd2; intensity: 0.9" position="20 35 15"></a-entity>
 
     <!-- Player / Camera Rig -->
-    <a-entity id="rig" position="0 0.1 0">
+    <a-entity id="rig" position="0 0.1 0" movement-controls>
       <a-camera id="camera" look-controls="pointerLockEnabled: false" wasd-controls="acceleration: 14" camera="far: 1000; near: 0.05">
         <a-cursor raycaster="objects: .clickable" color="#d4af37" opacity="0.5" scale="0.6 0.6 0.6"></a-cursor>
       </a-camera>
